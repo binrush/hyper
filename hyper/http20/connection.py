@@ -604,6 +604,7 @@ class HTTP20Connection(object):
             self.streams[s.stream_id] = s
             self.next_stream_id += 2
 
+            log.debug("Created stream with id %d", s.stream_id)
             return s
 
     def _send_cb(self, data, tolerate_peer_gone=False):
@@ -758,6 +759,8 @@ class HTTP20Connection(object):
                       stream_id,
                       self.recent_recv_streams)
             if stream_id in self.recent_recv_streams:
+                log.debug("Stream %d is in recent_recv_streams, discarding",
+                          stream_id)
                 self.recent_recv_streams.discard(stream_id)
                 return
 
@@ -778,15 +781,18 @@ class HTTP20Connection(object):
                 try:
                     self._single_read()
                 except ConnectionResetError:
+                    log.exception("Error while performing _single_read()")
                     break
                 except ssl.SSLError as e:  # pragma: no cover
                     # these are transient errors that can occur while reading
                     # from ssl connections.
+                    log.exception("Error while performing _single_read()")
                     if e.args[0] in TRANSIENT_SSL_ERRORS:
                         continue
                     else:
                         raise
                 except socket.error as e:  # pragma: no cover
+                    log.exception("Error while performing _single_read()")
                     if e.errno in (errno.EINTR, errno.EAGAIN):
                         # if 'interrupted' or 'try again', continue
                         time.sleep(retry_wait)
@@ -835,9 +841,11 @@ class HTTP20Connection(object):
         Called by a stream when it is closing, so that state can be cleared.
         """
         try:
+            log.debug("Deleting stream id %d", stream_id)
             del self.streams[stream_id]
             self.recent_recv_streams.discard(stream_id)
         except KeyError:
+            log.debug("Stream id %d was already deleted", stream_id)
             pass
 
     # The following two methods are the implementation of the context manager
