@@ -780,6 +780,7 @@ class HTTP20Connection(object):
                 # on transient errors.
                 try:
                     self._single_read()
+                    log.debug("_single_read(): success")
                 except ConnectionResetError:
                     log.exception("Error while performing _single_read()")
                     break
