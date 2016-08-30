@@ -671,7 +671,7 @@ class HTTP20Connection(object):
             stream_ids = set(getattr(e, 'stream_id', -1) for e in events)
             stream_ids.discard(-1)  # sentinel
             stream_ids.discard(0)  # connection events
-            log.debug("Received frames for streams %d", stream_ids)
+            log.debug("Received frames for streams %s", stream_ids)
             self.recent_recv_streams |= stream_ids
 
         for event in events:
