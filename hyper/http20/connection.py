@@ -675,6 +675,7 @@ class HTTP20Connection(object):
             self.recent_recv_streams |= stream_ids
 
         for event in events:
+            log.debug("Event: %s", repr(event))
             if isinstance(event, h2.events.DataReceived):
                 self._adjust_receive_window(event.flow_controlled_length)
                 self.streams[event.stream_id].receive_data(event)
